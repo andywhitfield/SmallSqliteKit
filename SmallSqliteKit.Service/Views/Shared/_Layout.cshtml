@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmallSqliteKit</title>
+
+    <environment names="Development">
+        <link rel="stylesheet" href="~/css/smallsqlitekit.css" />
+    </environment>
+    <environment names="Staging,Production">
+        <link rel="stylesheet" href="~/css/smallsqlitekit.min.css" asp-append-version="true" />
+    </environment>
+    @RenderSection("HeaderScripts", required: false)
+</head>
+<body>
+    <header>
+        <h1>SmallSqliteKit</h1>
+    </header>
+    
+    <section>
+    @RenderBody()
+    </section>
+
+    <environment names="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.4.1.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery"
+                crossorigin="anonymous">
+        </script>
+    </environment>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,13 @@
+@model SmallSqliteKit.Service.ViewModels.HomeViewModel
+
+<p>
+@if (Model.IsLinkedToDropbox) {
+    <a href="#">Unlink from Dropbox</a>
+} else {
+    <a href="#">Link to Dropbox</a>
+}
+</p>
+
+<p>
+Show an editable table with the configured set of databases, ability to add / remove, last backed-up time, backup schedule (?)
+</p>
