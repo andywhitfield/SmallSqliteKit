@@ -7,8 +7,6 @@ namespace SmallSqliteKit.Service.Controllers
 {
     public class HomeController : Controller
     {
-        private const string ConfigNameDropboxToken = "DropboxToken";
-
         private readonly IConfigRepository _configRepository;
 
         public HomeController(IConfigRepository configRepository)
@@ -18,13 +16,8 @@ namespace SmallSqliteKit.Service.Controllers
 
         public async Task<ActionResult> Index()
         {
-            var model = new HomeViewModel();
-
-            var dropboxTokenConfig = await _configRepository.FindConfigByNameAsync(ConfigNameDropboxToken);
-            if (!string.IsNullOrEmpty(dropboxTokenConfig?.ConfigValue))
-                model.IsLinkedToDropbox = true;
-
-            return View(model);
+            var dropboxToken = await _configRepository.GetDropboxTokenAsync();
+            return View(new HomeViewModel { IsLinkedToDropbox = !string.IsNullOrEmpty(dropboxToken) });
         }
     }
 }

@@ -12,7 +12,7 @@ namespace SmallSqliteKit.Service
 {
     public class Startup
     {
-        private IWebHostEnvironment hostingEnvironment;
+        private IWebHostEnvironment _hostingEnvironment;
 
         public Startup(IWebHostEnvironment env)
         {
@@ -23,7 +23,7 @@ namespace SmallSqliteKit.Service
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
 
-            hostingEnvironment = env;
+            _hostingEnvironment = env;
         }
 
         public IConfigurationRoot Configuration { get; }

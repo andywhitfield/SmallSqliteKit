@@ -38,5 +38,11 @@ namespace SmallSqliteKit.Service.Data
                 });
             await _context.SaveChangesAsync();
         }
+
+        public Task DeleteConfigAsync(Config config)
+        {
+            _context.Configs.Remove(config);
+            return _context.SaveChangesAsync();
+        }
     }
 }
