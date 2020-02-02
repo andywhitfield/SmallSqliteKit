@@ -8,6 +8,14 @@
 }
 </p>
 
+<form method="post" action="~/home/configure">
+<div>
+    <label asp-for="BackupPath">Backup Path:</label>
+    <input asp-for="BackupPath" />
+    <input type="submit" value="Update" />
+</div>
+</form>
+
 <p>
 Show an editable table with the configured set of databases, ability to add / remove, last backed-up time, backup schedule (?)
 </p>

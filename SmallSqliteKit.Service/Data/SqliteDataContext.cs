@@ -17,6 +17,10 @@ namespace SmallSqliteKit.Service.Data
         }
         
         public DbSet<Config> Configs { get; set; }
+        
+        public DbSet<DatabaseBackup> DatabaseBackups { get; set; }
+        
+        public DbSet<BackupAudit> BackupAudits { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
