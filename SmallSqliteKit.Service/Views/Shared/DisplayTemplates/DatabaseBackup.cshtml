@@ -1,0 +1,8 @@
+@model SmallSqliteKit.Service.Models.DatabaseBackup
+
+<td>@Model.DatabasePath</td>
+<td>@Model.BackupFrequency</td>
+<td>@Model.LastBackupTime</td>
+<td>@(Model.UploadToDropbox ? "Yes" : "No")</td>
+<td>@Model.UploadToDropboxFrequency</td>
+<td>@Model.LastUploadToDropboxTime</td>

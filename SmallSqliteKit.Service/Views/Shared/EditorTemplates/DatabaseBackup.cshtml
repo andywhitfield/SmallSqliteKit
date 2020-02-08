@@ -1,0 +1,8 @@
+@model SmallSqliteKit.Service.Models.DatabaseBackup
+
+<td><input asp-for="@Model.DatabasePath" /></td>
+<td><select asp-for="@Model.BackupFrequency" asp-items="Html.GetEnumSelectList<SmallSqliteKit.Service.Models.BackupFrequency>()"></select></td>
+<td>@Model.LastBackupTime</td>
+<td>@Html.LabelFor(model => model.UploadToDropbox, "Upload") <input asp-for="@Model.UploadToDropbox" /></td>
+<td><select asp-for="@Model.UploadToDropboxFrequency" asp-items="Html.GetEnumSelectList<SmallSqliteKit.Service.Models.BackupFrequency>()"></select></td>
+<td>@Model.LastUploadToDropboxTime</td>

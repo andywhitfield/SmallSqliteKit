@@ -8,14 +8,32 @@
 }
 </p>
 
-<form method="post" action="~/home/configure">
+<form asp-controller="home" asp-action="configure" method="post">
 <div>
     <label asp-for="BackupPath">Backup Path:</label>
     <input asp-for="BackupPath" />
-    <input type="submit" value="Update" />
+    <button type="submit" value="Update">Update</button>
 </div>
 </form>
 
-<p>
-Show an editable table with the configured set of databases, ability to add / remove, last backed-up time, backup schedule (?)
-</p>
+<h2>Databases to Backup</h2>
+<form asp-controller="home" asp-action="dbconfigs" method="post">
+    <table>
+        <tr><th>Database Path</th><th>Backup Frequency</th><th>Last Backup</th><th>Upload To Dropbox</th><th>Upload Frequency</th><th>Last Upload</th><th></th></tr>
+
+        @foreach (var dbBackup in Model.DatabaseBackups)
+        {
+            <tr>
+                @Html.DisplayFor(_ => dbBackup)
+                <td><button type="submit" name="delete" value="@dbBackup.DatabaseBackupId">Delete</button></td>
+            </tr>
+        }
+        <tr>
+            @Html.EditorFor(_ => Model.NewDatabaseModel)
+            <td><button type="submit" name="add" value="add">Add</button></td>
+        </tr>
+    </table>
+
+</form>
+
+<p>Audit TODO</p>
