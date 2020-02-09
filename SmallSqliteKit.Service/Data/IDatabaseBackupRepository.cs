@@ -10,5 +10,6 @@ namespace SmallSqliteKit.Service.Data
         Task<DatabaseBackup> GetAsync(int databaseBackupId);
         Task AddAsync(string databasePath, BackupFrequency backupFrequency, bool uploadToDropbox, BackupFrequency? uploadToDropboxFrequency);
         Task DeleteAsync(DatabaseBackup databaseBackup);
+        Task UpdateAsync(DatabaseBackup dbBackup);
     }
 }

@@ -41,5 +41,11 @@ namespace SmallSqliteKit.Service.Data
             _context.DatabaseBackups.Remove(databaseBackup);
             return _context.SaveChangesAsync();
         }
+
+        public Task UpdateAsync(DatabaseBackup databaseBackup)
+        {
+            _context.DatabaseBackups.Update(databaseBackup);
+            return _context.SaveChangesAsync();
+        }
     }
 }
