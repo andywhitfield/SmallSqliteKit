@@ -41,6 +41,7 @@ namespace SmallSqliteKit.Service
 
             services.AddDbContext<SqliteDataContext>();
             services.AddScoped<IConfigRepository, ConfigRepository>();
+            services.AddScoped<IDatabaseBackupRepository, DatabaseBackupRepository>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddSessionStateTempDataProvider();
             services.AddRazorPages();
