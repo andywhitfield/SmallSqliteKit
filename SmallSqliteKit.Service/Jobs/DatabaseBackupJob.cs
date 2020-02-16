@@ -1,4 +1,7 @@
 using System;
+using System.Data;
+using System.Data.SQLite;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,14 +18,25 @@ namespace SmallSqliteKit.Service.Jobs
 
         protected override async Task RunJobAsync(IServiceScope serviceScope)
         {
+            var configRepository = serviceScope.ServiceProvider.GetRequiredService<IConfigRepository>();
+            var backupPath = await configRepository.GetBackupPathAsync();
+
             var databaseBackupRepository = serviceScope.ServiceProvider.GetRequiredService<IDatabaseBackupRepository>();
+
             foreach (var dbBackup in (await databaseBackupRepository.GetAllAsync()))
             {
                 var dbBackupDue = dbBackup.BackupFrequency.NextDateTime(dbBackup.LastBackupTime);
                 if (dbBackupDue < DateTime.UtcNow)
                 {
                     _logger.LogInformation($"Backing up database: {dbBackup.DatabasePath} (last backup: {dbBackup.LastBackupTime}; freq: {dbBackup.BackupFrequency})");
-                    await BackupDbAsync(databaseBackupRepository, dbBackup);
+                    try
+                    {
+                        await BackupDbAsync(databaseBackupRepository, dbBackup, backupPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, $"Could not backup db {dbBackup.DatabasePath}");
+                    }
                 }
                 else
                 {
@@ -31,11 +45,42 @@ namespace SmallSqliteKit.Service.Jobs
             }
         }
 
-        private async Task BackupDbAsync(IDatabaseBackupRepository databaseBackupRepository, DatabaseBackup dbBackup)
+        private async Task BackupDbAsync(IDatabaseBackupRepository databaseBackupRepository, DatabaseBackup dbBackup, string backupPath)
         {
-            // TODO: do the backup
+            if (!File.Exists(dbBackup.DatabasePath))
+            {
+                _logger.LogWarning($"Database file [{dbBackup.DatabasePath}] does not exist, cannot perform backup");
+                return;
+            }
+
+            var backupTime = DateTime.UtcNow;
+            var dbFilename = Path.GetFileNameWithoutExtension(dbBackup.DatabasePath);
+            var dbExt = Path.GetExtension(dbBackup.DatabasePath);
+            if (string.IsNullOrEmpty(dbExt))
+                dbExt = ".db";
+            var backupFilename = Path.Join(backupPath, $"{dbFilename}.backup.{backupTime:yyyyMMddHHmmss}{dbExt}");
+            if (File.Exists(backupFilename))
+            {
+                _logger.LogError($"Backup file named [{backupFilename}] already exists, cannot perform backup");
+                return;
+            }
+
+            if (!Directory.Exists(backupPath))
+                Directory.CreateDirectory(backupPath);
+
+            using var dbToBackupConn = new SQLiteConnection($"Data Source={dbBackup.DatabasePath};FailIfMissing=True;");
+            await dbToBackupConn.OpenAsync();
+            using var dbCommand = dbToBackupConn.CreateCommand();
+            dbCommand.CommandType = CommandType.Text;
+            dbCommand.CommandText = $"vacuum into @vacuumInto";
+            var dbParam = dbCommand.CreateParameter();
+            dbParam.ParameterName = "@vacuumInto";
+            dbParam.Value = backupFilename;
+            dbCommand.Parameters.Add(dbParam);
+            await dbCommand.ExecuteNonQueryAsync();
+
             _logger.LogInformation($"Successfully backed up database: {dbBackup.DatabasePath}");
-            dbBackup.LastBackupTime = DateTime.UtcNow;
+            dbBackup.LastBackupTime = backupTime;
             await databaseBackupRepository.UpdateAsync(dbBackup);
         }
     }
