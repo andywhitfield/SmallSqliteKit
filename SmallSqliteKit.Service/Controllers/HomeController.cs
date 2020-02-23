@@ -1,8 +1,10 @@
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SmallSqliteKit.Service.Data;
 using SmallSqliteKit.Service.Models;
+using SmallSqliteKit.Service.Services;
 using SmallSqliteKit.Service.ViewModels;
 
 namespace SmallSqliteKit.Service.Controllers
@@ -12,12 +14,15 @@ namespace SmallSqliteKit.Service.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IConfigRepository _configRepository;
         private readonly IDatabaseBackupRepository _databaseBackupRepository;
+        private readonly IBackupFilePurger _backupFilePurger;
 
-        public HomeController(ILogger<HomeController> logger, IConfigRepository configRepository, IDatabaseBackupRepository databaseBackupRepository)
+        public HomeController(ILogger<HomeController> logger, IConfigRepository configRepository, IDatabaseBackupRepository databaseBackupRepository,
+            IBackupFilePurger backupFilePurger)
         {
             _logger = logger;
             _configRepository = configRepository;
             _databaseBackupRepository = databaseBackupRepository;
+            _backupFilePurger = backupFilePurger;
         }
 
         public async Task<ActionResult> Index()
@@ -58,7 +63,11 @@ namespace SmallSqliteKit.Service.Controllers
                 _logger.LogInformation($"Deleting db backup id: {addOrDeleteDbConfig.Delete}");
                 var dbToDelete = await _databaseBackupRepository.GetAsync(addOrDeleteDbConfig.Delete.Value);
                 if (dbToDelete != null)
+                {
                     await _databaseBackupRepository.DeleteAsync(dbToDelete);
+                    _backupFilePurger.PurgeBackups(
+                        new DirectoryInfo(await _configRepository.GetBackupPathAsync()), 0, Path.GetFileName(dbToDelete.DatabasePath));
+                }
             }
 
             return Redirect("~/");
