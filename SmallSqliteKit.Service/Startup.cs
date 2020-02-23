@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using SmallSqliteKit.Service.Data;
 using SmallSqliteKit.Service.Jobs;
+using SmallSqliteKit.Service.Services;
 
 namespace SmallSqliteKit.Service
 {
@@ -43,6 +44,7 @@ namespace SmallSqliteKit.Service
             services.AddDbContext<SqliteDataContext>();
             services.AddScoped<IConfigRepository, ConfigRepository>();
             services.AddScoped<IDatabaseBackupRepository, DatabaseBackupRepository>();
+            services.AddScoped<IBackupFilePurger, BackupFilePurger>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddSessionStateTempDataProvider();
             services.AddRazorPages();
@@ -50,6 +52,7 @@ namespace SmallSqliteKit.Service
             
             services.AddHostedService<DatabaseBackupJob>();
             services.AddHostedService<DropboxUploadJob>();
+            services.AddHostedService<PurgeJob>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)

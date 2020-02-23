@@ -15,15 +15,9 @@ namespace SmallSqliteKit.Service.Data
             _context = context;
         }
 
-        public Task<List<Config>> GetAllAsync()
-        {
-            return _context.Configs.ToListAsync();
-        }
+        public Task<List<Config>> GetAllAsync() => _context.Configs.ToListAsync();
 
-        public Task<Config> FindConfigByNameAsync(string configName)
-        {
-            return _context.Configs.Where(c => c.ConfigName == configName).FirstOrDefaultAsync();
-        }
+        public Task<Config> FindConfigByNameAsync(string configName) => _context.Configs.Where(c => c.ConfigName == configName).FirstOrDefaultAsync();
 
         public async Task AddOrUpdateAsync(string configName, string configValue)
         {

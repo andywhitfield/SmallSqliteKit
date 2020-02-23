@@ -6,6 +6,7 @@ namespace SmallSqliteKit.Service.Data
     {
         private const string ConfigNameDropboxToken = "DropboxToken";
         private const string ConfigNameBackupPath = "BackupPath";
+        private const string ConfigNameBackupFileCount = "BackupFileCount";
 
         public static async Task<string> GetDropboxTokenAsync(this IConfigRepository configRepository)
         {
@@ -28,9 +29,7 @@ namespace SmallSqliteKit.Service.Data
         }
 
         public static async Task<string> GetBackupPathAsync(this IConfigRepository configRepository)
-        {
-            return (await configRepository.FindConfigByNameAsync(ConfigNameBackupPath))?.ConfigValue ?? string.Empty;
-        }
+            => (await configRepository.FindConfigByNameAsync(ConfigNameBackupPath))?.ConfigValue ?? string.Empty;
 
         public static async Task SetBackupPathAsync(this IConfigRepository configRepository, string backupPath)
         {
@@ -45,5 +44,8 @@ namespace SmallSqliteKit.Service.Data
                 await configRepository.AddOrUpdateAsync(ConfigNameBackupPath, backupPath);
             }
         }
+
+        public static async Task<int> GetBackupFileCountAsync(this IConfigRepository configRepository)
+            => int.TryParse((await configRepository.FindConfigByNameAsync(ConfigNameBackupFileCount))?.ConfigValue ?? string.Empty, out var fileCount) ? fileCount : 5;
     }
 }

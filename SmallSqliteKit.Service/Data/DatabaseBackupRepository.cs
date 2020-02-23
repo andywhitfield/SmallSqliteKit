@@ -14,15 +14,9 @@ namespace SmallSqliteKit.Service.Data
             _context = context;
         }
 
-        public Task<List<DatabaseBackup>> GetAllAsync()
-        {
-            return _context.DatabaseBackups.ToListAsync();
-        }
+        public Task<List<DatabaseBackup>> GetAllAsync() => _context.DatabaseBackups.ToListAsync();
         
-        public Task<DatabaseBackup> GetAsync(int databaseBackupId)
-        {
-            return _context.DatabaseBackups.FindAsync(databaseBackupId).AsTask();
-        }
+        public Task<DatabaseBackup> GetAsync(int databaseBackupId) => _context.DatabaseBackups.FindAsync(databaseBackupId).AsTask();
 
         public async Task AddAsync(string databasePath, BackupFrequency backupFrequency, bool uploadToDropbox, BackupFrequency? uploadToDropboxFrequency)
         {
