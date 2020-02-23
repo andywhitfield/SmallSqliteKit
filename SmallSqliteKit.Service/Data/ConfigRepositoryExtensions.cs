@@ -29,7 +29,7 @@ namespace SmallSqliteKit.Service.Data
         }
 
         public static async Task<string> GetBackupPathAsync(this IConfigRepository configRepository)
-            => (await configRepository.FindConfigByNameAsync(ConfigNameBackupPath))?.ConfigValue ?? string.Empty;
+            => (await configRepository.FindConfigByNameAsync(ConfigNameBackupPath))?.ConfigValue ?? ".";
 
         public static async Task SetBackupPathAsync(this IConfigRepository configRepository, string backupPath)
         {
