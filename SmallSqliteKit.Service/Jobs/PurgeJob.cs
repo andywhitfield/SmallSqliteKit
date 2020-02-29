@@ -10,11 +10,8 @@ namespace SmallSqliteKit.Service.Jobs
 {
     public class PurgeJob : BackgroundServiceJob
     {
-        private readonly IBackupFilePurger _backupFilePurger;
-
-        public PurgeJob(IServiceProvider serviceProvider, ILogger<DropboxUploadJob> logger, IBackupFilePurger backupFilePurger) : base(serviceProvider, logger)
+        public PurgeJob(IServiceProvider serviceProvider, ILogger<DropboxUploadJob> logger) : base(serviceProvider, logger)
         {
-            _backupFilePurger = backupFilePurger;
         }
 
         protected override async Task RunJobAsync(IServiceScope serviceScope)
@@ -23,7 +20,7 @@ namespace SmallSqliteKit.Service.Jobs
             var backupPath = new DirectoryInfo(await configRepository.GetBackupPathAsync());
             var backupsToKeep = await configRepository.GetBackupFileCountAsync();
 
-            _backupFilePurger.PurgeBackups(backupPath, backupsToKeep);
+            serviceScope.ServiceProvider.GetRequiredService<IBackupFilePurger>().PurgeBackups(backupPath, backupsToKeep);
         }
     }
 }

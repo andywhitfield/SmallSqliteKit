@@ -45,6 +45,7 @@ namespace SmallSqliteKit.Service
             services.AddScoped<IConfigRepository, ConfigRepository>();
             services.AddScoped<IDatabaseBackupRepository, DatabaseBackupRepository>();
             services.AddScoped<IBackupFilePurger, BackupFilePurger>();
+            services.AddScoped<IDropboxUploadClient, DropboxUploadClient>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddSessionStateTempDataProvider();
             services.AddRazorPages();

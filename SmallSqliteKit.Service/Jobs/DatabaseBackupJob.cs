@@ -54,11 +54,7 @@ namespace SmallSqliteKit.Service.Jobs
             }
 
             var backupTime = DateTime.UtcNow;
-            var dbFilename = Path.GetFileNameWithoutExtension(dbBackup.DatabasePath);
-            var dbExt = Path.GetExtension(dbBackup.DatabasePath);
-            if (string.IsNullOrEmpty(dbExt))
-                dbExt = ".db";
-            var backupFilename = Path.Join(backupPath, $"{dbFilename}.backup.{backupTime:yyyyMMddHHmmss}{dbExt}");
+            var backupFilename = GetBackupFilename(dbBackup, backupPath, backupTime);
             if (File.Exists(backupFilename))
             {
                 _logger.LogError($"Backup file named [{backupFilename}] already exists, cannot perform backup");
@@ -82,6 +78,15 @@ namespace SmallSqliteKit.Service.Jobs
             _logger.LogInformation($"Successfully backed up database: {dbBackup.DatabasePath}");
             dbBackup.LastBackupTime = backupTime;
             await databaseBackupRepository.UpdateAsync(dbBackup);
+        }
+
+        internal static string GetBackupFilename(DatabaseBackup dbBackup, string backupPath, DateTime backupTime)
+        {
+            var dbFilename = Path.GetFileNameWithoutExtension(dbBackup.DatabasePath);
+            var dbExt = Path.GetExtension(dbBackup.DatabasePath);
+            if (string.IsNullOrEmpty(dbExt))
+                dbExt = ".db";
+            return Path.Join(backupPath, $"{dbFilename}.backup.{backupTime:yyyyMMddHHmmss}{dbExt}");
         }
     }
 }
