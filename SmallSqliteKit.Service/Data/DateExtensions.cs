@@ -33,7 +33,7 @@ namespace SmallSqliteKit.Service.Data
             if (string.IsNullOrEmpty(value))
                 return null;
             
-            if (DateTime.TryParseExact(value, DefaultDateTimeFormat, null, DateTimeStyles.AssumeUniversal, out var date))
+            if (DateTime.TryParseExact(value, DefaultDateTimeFormat, null, DateTimeStyles.AdjustToUniversal, out var date))
                 return date;
             
             return null;
