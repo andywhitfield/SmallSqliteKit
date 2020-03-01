@@ -36,4 +36,16 @@
 
 </form>
 
-<p>Audit TODO</p>
+<h2>Audit Events</h2>
+
+<table>
+    <tr><th>Timestamp</th><th>Database Backup</th><th>Log Message</th></tr>
+
+    @foreach (var auditEvent in Model.AuditEvents)
+    {
+        <tr>
+            @Html.DisplayFor(_ => auditEvent)
+        </tr>
+    }
+</table>
+

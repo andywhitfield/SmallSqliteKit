@@ -15,14 +15,16 @@ namespace SmallSqliteKit.Service.Controllers
         private readonly IConfigRepository _configRepository;
         private readonly IDatabaseBackupRepository _databaseBackupRepository;
         private readonly IBackupFilePurger _backupFilePurger;
+        private readonly IBackupAuditRepository _backupAuditRepository;
 
         public HomeController(ILogger<HomeController> logger, IConfigRepository configRepository, IDatabaseBackupRepository databaseBackupRepository,
-            IBackupFilePurger backupFilePurger)
+            IBackupFilePurger backupFilePurger, IBackupAuditRepository backupAuditRepository)
         {
             _logger = logger;
             _configRepository = configRepository;
             _databaseBackupRepository = databaseBackupRepository;
             _backupFilePurger = backupFilePurger;
+            _backupAuditRepository = backupAuditRepository;
         }
 
         public async Task<ActionResult> Index()
@@ -32,7 +34,8 @@ namespace SmallSqliteKit.Service.Controllers
             {
                 IsLinkedToDropbox = !string.IsNullOrEmpty(dropboxToken),
                 BackupPath = (await _configRepository.GetBackupPathAsync()),
-                DatabaseBackups = (await _databaseBackupRepository.GetAllAsync())
+                DatabaseBackups = (await _databaseBackupRepository.GetAllAsync()),
+                AuditEvents = (await _backupAuditRepository.GetAuditEventsAsync(20))
             });
         }
 

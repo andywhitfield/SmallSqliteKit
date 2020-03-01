@@ -23,7 +23,7 @@ namespace SmallSqliteKit.Service.Tests.Controllers
             var databaseBackupRepository = new Mock<IDatabaseBackupRepository>();
             var backupFilePurger = new Mock<IBackupFilePurger>(MockBehavior.Strict);
             var controller = new HomeController(Mock.Of<ILogger<HomeController>>(), Mock.Of<IConfigRepository>(),
-                databaseBackupRepository.Object, backupFilePurger.Object);
+                databaseBackupRepository.Object, backupFilePurger.Object, Mock.Of<IBackupAuditRepository>());
 
             var request = new AddOrDeleteDbConfig
             {
@@ -49,7 +49,7 @@ namespace SmallSqliteKit.Service.Tests.Controllers
             var databaseBackupRepository = new Mock<IDatabaseBackupRepository>();
             var backupFilePurger = new Mock<IBackupFilePurger>();
             var controller = new HomeController(Mock.Of<ILogger<HomeController>>(), Mock.Of<IConfigRepository>(),
-                databaseBackupRepository.Object, backupFilePurger.Object);
+                databaseBackupRepository.Object, backupFilePurger.Object, Mock.Of<IBackupAuditRepository>());
 
             var dbBackup = _fixture
                 .Build<DatabaseBackup>()

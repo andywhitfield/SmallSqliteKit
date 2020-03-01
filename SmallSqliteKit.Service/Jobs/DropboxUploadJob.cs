@@ -19,6 +19,7 @@ namespace SmallSqliteKit.Service.Jobs
         protected override async Task RunJobAsync(IServiceScope serviceScope)
         {
             var configRepository = serviceScope.ServiceProvider.GetRequiredService<IConfigRepository>();
+            var backupAuditRepository = serviceScope.ServiceProvider.GetRequiredService<IBackupAuditRepository>();
             if (string.IsNullOrEmpty(await configRepository.GetDropboxTokenAsync()))
             {
                 _logger.LogInformation("No dropbox token available, cannot continue with the upload job");
@@ -36,10 +37,12 @@ namespace SmallSqliteKit.Service.Jobs
                     try
                     {
                         await UploadLastBackupAsync(databaseBackupRepository, dbBackup, backupPath, serviceScope.ServiceProvider.GetRequiredService<IDropboxUploadClient>());
+                        await backupAuditRepository.AuditEventAsync(dbBackup, "Upload success");
                     }
                     catch (Exception ex)
                     {
                         _logger.LogWarning(ex, $"Could not upload last backup of db {dbBackup.DatabasePath}");
+                        await backupAuditRepository.AuditEventAsync(dbBackup, $"Upload failed: unexpected error: {ex.Message}");
                     }
                 }
                 else

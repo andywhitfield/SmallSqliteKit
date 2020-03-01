@@ -44,6 +44,7 @@ namespace SmallSqliteKit.Service
             services.AddDbContext<SqliteDataContext>();
             services.AddScoped<IConfigRepository, ConfigRepository>();
             services.AddScoped<IDatabaseBackupRepository, DatabaseBackupRepository>();
+            services.AddScoped<IBackupAuditRepository, BackupAuditRepository>();
             services.AddScoped<IBackupFilePurger, BackupFilePurger>();
             services.AddScoped<IDropboxUploadClient, DropboxUploadClient>();
 

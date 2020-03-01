@@ -19,6 +19,7 @@ namespace SmallSqliteKit.Service.Jobs
         protected override async Task RunJobAsync(IServiceScope serviceScope)
         {
             var configRepository = serviceScope.ServiceProvider.GetRequiredService<IConfigRepository>();
+            var backupAuditRepository = serviceScope.ServiceProvider.GetRequiredService<IBackupAuditRepository>();
             var backupPath = await configRepository.GetBackupPathAsync();
 
             var databaseBackupRepository = serviceScope.ServiceProvider.GetRequiredService<IDatabaseBackupRepository>();
@@ -31,11 +32,13 @@ namespace SmallSqliteKit.Service.Jobs
                     _logger.LogInformation($"Backing up database: {dbBackup.DatabasePath} (last backup: {dbBackup.LastBackupTime}; freq: {dbBackup.BackupFrequency})");
                     try
                     {
-                        await BackupDbAsync(databaseBackupRepository, dbBackup, backupPath);
+                        await BackupDbAsync(databaseBackupRepository, dbBackup, backupPath, backupAuditRepository);
+                        await backupAuditRepository.AuditEventAsync(dbBackup, "Backup success");
                     }
                     catch (Exception ex)
                     {
                         _logger.LogWarning(ex, $"Could not backup db {dbBackup.DatabasePath}");
+                        await backupAuditRepository.AuditEventAsync(dbBackup, $"Backup failed: unexpected error: {ex.Message}");
                     }
                 }
                 else
@@ -45,11 +48,13 @@ namespace SmallSqliteKit.Service.Jobs
             }
         }
 
-        private async Task BackupDbAsync(IDatabaseBackupRepository databaseBackupRepository, DatabaseBackup dbBackup, string backupPath)
+        private async Task BackupDbAsync(IDatabaseBackupRepository databaseBackupRepository, DatabaseBackup dbBackup, string backupPath,
+            IBackupAuditRepository backupAuditRepository)
         {
             if (!File.Exists(dbBackup.DatabasePath))
             {
                 _logger.LogWarning($"Database file [{dbBackup.DatabasePath}] does not exist, cannot perform backup");
+                await backupAuditRepository.AuditEventAsync(dbBackup, "Backup failed: database file does not exist");
                 return;
             }
 
@@ -58,6 +63,7 @@ namespace SmallSqliteKit.Service.Jobs
             if (File.Exists(backupFilename))
             {
                 _logger.LogError($"Backup file named [{backupFilename}] already exists, cannot perform backup");
+                await backupAuditRepository.AuditEventAsync(dbBackup, "Backup failed: file already exists");
                 return;
             }
 
