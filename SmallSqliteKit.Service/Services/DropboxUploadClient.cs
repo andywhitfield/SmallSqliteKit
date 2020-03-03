@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Threading.Tasks;
 using Dropbox.Api;
 using Dropbox.Api.Files;
@@ -26,10 +27,9 @@ namespace SmallSqliteKit.Service.Services
                 _dropboxClient = new DropboxClient(await _configRepository.GetDropboxTokenAsync());
 
             var dropboxFilename = string.IsNullOrWhiteSpace(uploadWithFilename) ? file.Name : uploadWithFilename;
-            if (!dropboxFilename.StartsWith('/'))
-                dropboxFilename = '/' + dropboxFilename;
+            dropboxFilename = $"{(dropboxFilename.StartsWith('/') ? string.Empty : "/")}{dropboxFilename}.gz";
             
-            using var stream = file.OpenRead();
+            using var stream = new GZipStream(file.OpenRead(), CompressionLevel.Optimal);
             var uploadedFile = await _dropboxClient.Files.UploadAsync(dropboxFilename, WriteMode.Overwrite.Instance, body: stream);
             _logger.LogTrace($"Saved {uploadedFile.PathDisplay}/{uploadedFile.Name} rev {uploadedFile.Rev}");
         }
