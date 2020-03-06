@@ -28,9 +28,14 @@ namespace SmallSqliteKit.Service.Services
 
             var dropboxFilename = string.IsNullOrWhiteSpace(uploadWithFilename) ? file.Name : uploadWithFilename;
             dropboxFilename = $"{(dropboxFilename.StartsWith('/') ? string.Empty : "/")}{dropboxFilename}.gz";
-            
-            using var stream = new GZipStream(file.OpenRead(), CompressionLevel.Optimal);
-            var uploadedFile = await _dropboxClient.Files.UploadAsync(dropboxFilename, WriteMode.Overwrite.Instance, body: stream);
+
+            using var fileToUploadStream = file.OpenRead();
+            using var outputStream = new MemoryStream();
+            using (var stream = new GZipStream(outputStream, CompressionLevel.Optimal, true))
+                await fileToUploadStream.CopyToAsync(stream);
+
+            outputStream.Position = 0;
+            var uploadedFile = await _dropboxClient.Files.UploadAsync(dropboxFilename, WriteMode.Overwrite.Instance, body: outputStream);
             _logger.LogTrace($"Saved {uploadedFile.PathDisplay}/{uploadedFile.Name} rev {uploadedFile.Rev}");
         }
 
