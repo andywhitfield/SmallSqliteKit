@@ -66,7 +66,7 @@ namespace SmallSqliteKit.Service.Tests.Controllers
             Assert.False(redirect.Permanent);
 
             databaseBackupRepository.Verify(d => d.DeleteAsync(dbBackup), Times.Once);
-            backupFilePurger.Verify(p => p.PurgeBackups(It.IsAny<DirectoryInfo>(), 0, Path.GetFileName(dbBackup.DatabasePath)), Times.Once);
+            backupFilePurger.Verify(p => p.PurgeBackups(It.IsAny<DirectoryInfo>(), 0, dbBackup), Times.Once);
             backupFilePurger.VerifyNoOtherCalls();
         }
     }

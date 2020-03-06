@@ -62,7 +62,7 @@ namespace SmallSqliteKit.Service.Jobs
             }
 
             _logger.LogInformation($"Uploading latest database backup [{dbBackup.DatabasePath}]: {backupFile}");
-            await dropboxUploadClient.UploadFileAsync(backupFile, Path.GetFileName(dbBackup.DatabasePath));
+            await dropboxUploadClient.UploadFileAsync(backupFile, $"{Path.GetFileName(dbBackup.DatabasePath)}.{dbBackup.DatabaseBackupId}");
             _logger.LogInformation($"Successfully uploaded latest database backup: {dbBackup.DatabasePath}");
 
             dbBackup.LastUploadToDropboxTime = DateTime.UtcNow;

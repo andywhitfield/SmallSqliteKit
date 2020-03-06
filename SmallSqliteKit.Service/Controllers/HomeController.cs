@@ -69,7 +69,7 @@ namespace SmallSqliteKit.Service.Controllers
                 {
                     await _databaseBackupRepository.DeleteAsync(dbToDelete);
                     _backupFilePurger.PurgeBackups(
-                        new DirectoryInfo(await _configRepository.GetBackupPathAsync()), 0, Path.GetFileName(dbToDelete.DatabasePath));
+                        new DirectoryInfo(await _configRepository.GetBackupPathAsync()), 0, dbToDelete);
                 }
             }
 

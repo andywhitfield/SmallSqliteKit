@@ -92,7 +92,7 @@ namespace SmallSqliteKit.Service.Jobs
             var dbExt = Path.GetExtension(dbBackup.DatabasePath);
             if (string.IsNullOrEmpty(dbExt))
                 dbExt = ".db";
-            return Path.Join(backupPath, $"{dbFilename}.backup.{backupTime:yyyyMMddHHmmss}{dbExt}");
+            return Path.Join(backupPath, $"{dbFilename}.{dbBackup.DatabaseBackupId}.backup.{backupTime:yyyyMMddHHmmss}{dbExt}");
         }
     }
 }

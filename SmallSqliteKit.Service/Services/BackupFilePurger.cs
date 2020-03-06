@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using SmallSqliteKit.Service.Models;
 
 namespace SmallSqliteKit.Service.Services
 {
@@ -16,9 +17,9 @@ namespace SmallSqliteKit.Service.Services
             _logger = logger;
         }
 
-        public IEnumerable<string> PurgeBackups(DirectoryInfo backupPath, int backupsToKeep, string filename = null) => PurgeBackupsInternal(backupPath, backupsToKeep, filename).ToList();
+        public IEnumerable<string> PurgeBackups(DirectoryInfo backupPath, int backupsToKeep, DatabaseBackup backupToDelete = null) => PurgeBackupsInternal(backupPath, backupsToKeep, backupToDelete).ToList();
 
-        public IEnumerable<string> PurgeBackupsInternal(DirectoryInfo backupPath, int backupsToKeep, string filename)
+        private IEnumerable<string> PurgeBackupsInternal(DirectoryInfo backupPath, int backupsToKeep, DatabaseBackup backupToDelete)
         {
             if (!backupPath?.Exists ?? true)
                 yield break;
@@ -28,13 +29,26 @@ namespace SmallSqliteKit.Service.Services
                 .GetFiles($"*{backupFileSegment}*")
                 .Select(fi =>
                 {
-                    var nullValue = new { FileInfo = (FileInfo)null, BackupName = (string)null, BackupDate = (DateTime?)null };
+                    var nullValue = new { FileInfo = (FileInfo)null, BackupId = default(int), BackupDate = (DateTime?)null };
                     var backupIdx = fi.Name.LastIndexOf(backupFileSegment);
                     if (backupIdx < 0)
                         return nullValue;
 
-                    var filenameWithoutExt = fi.Name.Substring(0, backupIdx);
-                    if (!string.IsNullOrEmpty(filename) && (filenameWithoutExt != Path.GetFileNameWithoutExtension(filename) || fi.Extension != Path.GetExtension(filename)))
+                    var filenameAndIdWithoutExt = fi.Name.Substring(0, backupIdx);
+                    var filenameAndIdIdx = filenameAndIdWithoutExt.LastIndexOf('.');
+                    if (filenameAndIdIdx < 0)
+                        return nullValue;
+                    
+                    var filenameWithoutExt = filenameAndIdWithoutExt.Substring(0, filenameAndIdIdx);
+                    var backupIdSegment = filenameAndIdWithoutExt.Substring(filenameAndIdIdx + 1);
+                    if (!int.TryParse(backupIdSegment, out var backupId))
+                        return nullValue;
+
+                    if (backupToDelete != null && (
+                        backupId != backupToDelete.DatabaseBackupId ||
+                        filenameWithoutExt != Path.GetFileNameWithoutExtension(backupToDelete.DatabasePath) ||
+                        fi.Extension != Path.GetExtension(backupToDelete.DatabasePath)
+                    ))
                         return nullValue;
 
                     var dateAndExt = fi.Name.Substring(backupIdx + backupFileSegment.Length);
@@ -50,16 +64,16 @@ namespace SmallSqliteKit.Service.Services
 
                     _logger.LogTrace($"Backup file: [{fi.Name}]");
 
-                    return new { FileInfo = fi, BackupName = filenameWithoutExt, BackupDate = (DateTime?)backupDateTime };
+                    return new { FileInfo = fi, BackupId = backupId, BackupDate = (DateTime?)backupDateTime };
                 })
                 .Where(backups => backups.FileInfo != null)
-                .GroupBy(backups => backups.BackupName))
+                .GroupBy(backups => backups.BackupId))
             {
-                foreach (var backupToDelete in backup.OrderByDescending(b => b.BackupDate).Skip(backupsToKeep))
+                foreach (var toDelete in backup.OrderByDescending(b => b.BackupDate).Skip(backupsToKeep))
                 {
-                    _logger.LogInformation($"Removing old backup: {backupToDelete.FileInfo.FullName}");
-                    backupToDelete.FileInfo.Delete();
-                    yield return backupToDelete.FileInfo.FullName;
+                    _logger.LogInformation($"Removing old backup: {toDelete.FileInfo.FullName}");
+                    toDelete.FileInfo.Delete();
+                    yield return toDelete.FileInfo.FullName;
                 }
             }
         }
