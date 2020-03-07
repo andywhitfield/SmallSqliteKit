@@ -24,9 +24,9 @@ namespace SmallSqliteKit.Service.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var dbDataSource = configuration["DbContext:DbPath"];
-            logger.LogDebug($"Using DB location: {dbDataSource}");
-            optionsBuilder.UseSqlite($"Data Source={dbDataSource}");
+            var dbDataSource = configuration.GetConnectionString("SmallSqliteKit");
+            logger.LogDebug($"Using DB connection: {dbDataSource}");
+            optionsBuilder.UseSqlite(dbDataSource);
         }
     }
 }
