@@ -36,7 +36,7 @@ namespace SmallSqliteKit.Service
 
             services.AddLogging(logging =>
             {
-                logging.AddConsole(opt => opt.TimestampFormat = "[HH:mm:ss] ");
+                logging.AddConsole();
                 logging.AddDebug();
                 logging.SetMinimumLevel(LogLevel.Trace);
             });
