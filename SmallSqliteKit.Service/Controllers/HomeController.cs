@@ -29,10 +29,10 @@ namespace SmallSqliteKit.Service.Controllers
 
         public async Task<ActionResult> Index()
         {
-            var dropboxToken = await _configRepository.GetDropboxTokenAsync();
+            var (dropboxAccessToken, dropboxRefreshToken) = await _configRepository.GetDropboxTokensAsync();
             return View(new HomeViewModel
             {
-                IsLinkedToDropbox = !string.IsNullOrEmpty(dropboxToken),
+                IsLinkedToDropbox = !string.IsNullOrEmpty(dropboxAccessToken) && string.IsNullOrEmpty(dropboxRefreshToken),
                 BackupPath = (await _configRepository.GetBackupPathAsync()),
                 DatabaseBackups = (await _databaseBackupRepository.GetAllAsync()),
                 AuditEvents = (await _backupAuditRepository.GetAuditEventsAsync(20))

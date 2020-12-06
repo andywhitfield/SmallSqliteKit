@@ -41,6 +41,8 @@ namespace SmallSqliteKit.Service
                 logging.SetMinimumLevel(LogLevel.Trace);
             });
 
+            services.Configure<DropboxOptions>(Configuration.GetSection("Dropbox"));
+
             services.AddDbContext<SqliteDataContext>();
             services.AddScoped<IConfigRepository, ConfigRepository>();
             services.AddScoped<IDatabaseBackupRepository, DatabaseBackupRepository>();

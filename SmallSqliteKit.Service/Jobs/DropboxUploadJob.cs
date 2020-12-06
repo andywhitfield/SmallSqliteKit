@@ -20,9 +20,10 @@ namespace SmallSqliteKit.Service.Jobs
         {
             var configRepository = serviceScope.ServiceProvider.GetRequiredService<IConfigRepository>();
             var backupAuditRepository = serviceScope.ServiceProvider.GetRequiredService<IBackupAuditRepository>();
-            if (string.IsNullOrEmpty(await configRepository.GetDropboxTokenAsync()))
+            var (dropboxAccessToken, dropboxRefreshToken) = await configRepository.GetDropboxTokensAsync();
+            if (string.IsNullOrEmpty(dropboxAccessToken) || string.IsNullOrEmpty(dropboxRefreshToken))
             {
-                _logger.LogInformation("No dropbox token available, cannot continue with the upload job");
+                _logger.LogInformation("No dropbox tokens available, cannot continue with the upload job");
                 return;
             }
 

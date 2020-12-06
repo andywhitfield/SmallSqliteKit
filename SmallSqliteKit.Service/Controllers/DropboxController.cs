@@ -2,9 +2,10 @@ using System;
 using System.Threading.Tasks;
 using Dropbox.Api;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SmallSqliteKit.Service.Data;
+using SmallSqliteKit.Service.Services;
 
 namespace SmallSqliteKit.Service.Controllers
 {
@@ -12,17 +13,15 @@ namespace SmallSqliteKit.Service.Controllers
     {
         private readonly IConfigRepository _configRepository;
         private readonly ILogger<DropboxController> _logger;
-        private readonly string _dropboxAppKey;
-        private readonly string _dropboxAppSecret;
+        private readonly DropboxOptions _dropboxOptions;
 
         public DropboxController(IConfigRepository configRepository,
             ILogger<DropboxController> logger,
-            IConfiguration configuration)
+            IOptions<DropboxOptions> dropboxOptions)
         {
             _configRepository = configRepository;
             _logger = logger;
-            _dropboxAppKey = configuration["Dropbox:SmallSqliteKitAppKey"];
-            _dropboxAppSecret = configuration["Dropbox:SmallSqliteKitAppSecret"];
+            _dropboxOptions = dropboxOptions.Value;
         }
 
         private Uri RedirectUri
@@ -42,7 +41,7 @@ namespace SmallSqliteKit.Service.Controllers
         [HttpGet]
         public IActionResult Connect()
         {
-            var dropboxRedirect = DropboxOAuth2Helper.GetAuthorizeUri(OAuthResponseType.Code, _dropboxAppKey, RedirectUri);
+            var dropboxRedirect = DropboxOAuth2Helper.GetAuthorizeUri(OAuthResponseType.Code, _dropboxOptions.SmallSqliteKitAppKey, RedirectUri, tokenAccessType: TokenAccessType.Offline, scopeList: new[] {"files.content.write"});
             _logger.LogInformation($"Getting user token from Dropbox: {dropboxRedirect} (redirect={RedirectUri})");
             return Redirect(dropboxRedirect.ToString());
         }
@@ -50,17 +49,17 @@ namespace SmallSqliteKit.Service.Controllers
         [HttpGet]
         public async Task<ActionResult> Authentication(string code, string state)
         {
-            var response = await DropboxOAuth2Helper.ProcessCodeFlowAsync(code, _dropboxAppKey, _dropboxAppSecret, RedirectUri.ToString());
+            var response = await DropboxOAuth2Helper.ProcessCodeFlowAsync(code, _dropboxOptions.SmallSqliteKitAppKey, _dropboxOptions.SmallSqliteKitAppSecret, RedirectUri.ToString());
             _logger.LogInformation($"Got user token from Dropbox: {response.AccessToken}");
 
-            await _configRepository.SetDropboxTokenAsync(response.AccessToken);
+            await _configRepository.SetDropboxTokensAsync(response.AccessToken, response.RefreshToken);
             return Redirect("~/");
         }
 
         [HttpGet]
         public async Task<ActionResult> Disconnect()
         {
-            await _configRepository.SetDropboxTokenAsync(null);
+            await _configRepository.SetDropboxTokensAsync(null, null);
             return Redirect("~/");
         }
     }
