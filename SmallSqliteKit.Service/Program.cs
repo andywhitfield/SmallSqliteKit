@@ -39,8 +39,8 @@ namespace SmallSqliteKit.Service
                 .ConfigureWebHostDefaults(webBuilder => webBuilder
                     .UseKestrel()
                     .UseStartup<Startup>()
-                    .UseSerilog()
-                );
+                )
+                .UseSerilog();
         }
     }
 }
