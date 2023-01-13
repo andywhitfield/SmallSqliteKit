@@ -27,7 +27,7 @@ namespace SmallSqliteKit.Service.Controllers
             _backupAuditRepository = backupAuditRepository;
         }
 
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index([FromQuery]int? update = null)
         {
             var (dropboxAccessToken, dropboxRefreshToken) = await _configRepository.GetDropboxTokensAsync();
             return View(new HomeViewModel
@@ -35,7 +35,8 @@ namespace SmallSqliteKit.Service.Controllers
                 IsLinkedToDropbox = !string.IsNullOrEmpty(dropboxAccessToken) && !string.IsNullOrEmpty(dropboxRefreshToken),
                 BackupPath = (await _configRepository.GetBackupPathAsync()),
                 DatabaseBackups = (await _databaseBackupRepository.GetAllAsync()),
-                AuditEvents = (await _backupAuditRepository.GetAuditEventsAsync(20))
+                AuditEvents = (await _backupAuditRepository.GetAuditEventsAsync(20)),
+                EditingBackupId = update
             });
         }
 
@@ -70,6 +71,30 @@ namespace SmallSqliteKit.Service.Controllers
                     await _databaseBackupRepository.DeleteAsync(dbToDelete);
                     _backupFilePurger.PurgeBackups(
                         new DirectoryInfo(await _configRepository.GetBackupPathAsync()), 0, dbToDelete);
+                }
+            }
+
+            if (addOrDeleteDbConfig.Update.HasValue)
+            {
+                _logger.LogInformation($"Updating db backup id: {addOrDeleteDbConfig.Update}");
+                return Redirect($"~/?update={addOrDeleteDbConfig.Update}");
+            }
+
+            if (addOrDeleteDbConfig.SaveUpdate.HasValue)
+            {
+                _logger.LogInformation($"Saving changes to db backup id: {addOrDeleteDbConfig.SaveUpdate}");
+                var dbToUpdate = await _databaseBackupRepository.GetAsync(addOrDeleteDbConfig.SaveUpdate.Value);
+                if (dbToUpdate != null)
+                {
+                    dbToUpdate.DatabasePath = addOrDeleteDbConfig.NewDatabaseModel.DatabasePath;
+                    dbToUpdate.BackupFrequency = addOrDeleteDbConfig.NewDatabaseModel.BackupFrequency;
+                    dbToUpdate.UploadToDropbox = addOrDeleteDbConfig.NewDatabaseModel.UploadToDropbox;
+                    dbToUpdate.UploadToDropboxFrequency = addOrDeleteDbConfig.NewDatabaseModel.UploadToDropboxFrequency;
+                    dbToUpdate.Optimize = addOrDeleteDbConfig.NewDatabaseModel.Optimize;
+                    dbToUpdate.OptimizeFrequency = addOrDeleteDbConfig.NewDatabaseModel.OptimizeFrequency;
+                    dbToUpdate.Vacuum = addOrDeleteDbConfig.NewDatabaseModel.Vacuum;
+                    dbToUpdate.VacuumFrequency = addOrDeleteDbConfig.NewDatabaseModel.VacuumFrequency;
+                    await _databaseBackupRepository.UpdateAsync(dbToUpdate);
                 }
             }
 

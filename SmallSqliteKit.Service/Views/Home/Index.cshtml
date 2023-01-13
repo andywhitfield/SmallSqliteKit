@@ -24,14 +24,22 @@
         @foreach (var dbBackup in Model.DatabaseBackups)
         {
             <tr>
+                @if (Model.EditingBackupId == dbBackup.DatabaseBackupId) {
+                @Html.EditorFor(_ => dbBackup, null, htmlFieldName: "NewDatabaseModel")
+                <td><button type="submit" name="saveupdate" value="@dbBackup.DatabaseBackupId">Save</button> <button type="submit" name="cancel" value="cancel">Cancel</button></td>
+                } else {
                 @Html.DisplayFor(_ => dbBackup)
-                <td><button type="submit" name="delete" value="@dbBackup.DatabaseBackupId">Delete</button></td>
+                <td><button type="submit" name="update" value="@dbBackup.DatabaseBackupId">Update</button> <button type="submit" name="delete" value="@dbBackup.DatabaseBackupId">Delete</button></td>
+                }
             </tr>
         }
+
+        @if (!Model.EditingBackupId.HasValue) {
         <tr>
             @Html.EditorFor(_ => Model.NewDatabaseModel)
             <td><button type="submit" name="add" value="add">Add</button></td>
         </tr>
+        }
     </table>
 
 </form>

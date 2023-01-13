@@ -10,5 +10,6 @@ namespace SmallSqliteKit.Service.ViewModels
         public IEnumerable<DatabaseBackup> DatabaseBackups { get; set; } = new List<DatabaseBackup>();
         public DatabaseBackup NewDatabaseModel => new DatabaseBackup();
         public IEnumerable<BackupAudit> AuditEvents { get; set; } = new List<BackupAudit>();
+        public int? EditingBackupId { get; set; }
     }
 }
