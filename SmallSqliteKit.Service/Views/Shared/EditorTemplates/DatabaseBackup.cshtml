@@ -6,3 +6,9 @@
 <td>@Html.LabelFor(model => model.UploadToDropbox, "Upload") <input asp-for="@Model.UploadToDropbox" /></td>
 <td><select asp-for="@Model.UploadToDropboxFrequency" asp-items="Html.GetEnumSelectList<SmallSqliteKit.Service.Models.BackupFrequency>()"></select></td>
 <td>@Model.LastUploadToDropboxTime</td>
+<td>@Html.LabelFor(model => model.Optimize, "Optimize") <input asp-for="@Model.Optimize" /></td>
+<td><select asp-for="@Model.OptimizeFrequency" asp-items="Html.GetEnumSelectList<SmallSqliteKit.Service.Models.BackupFrequency>()"></select></td>
+<td>@Model.LastOptimizeTime</td>
+<td>@Html.LabelFor(model => model.Vacuum, "Vacuum") <input asp-for="@Model.Vacuum" /></td>
+<td><select asp-for="@Model.VacuumFrequency" asp-items="Html.GetEnumSelectList<SmallSqliteKit.Service.Models.BackupFrequency>()"></select></td>
+<td>@Model.LastVacuumTime</td>

@@ -19,7 +19,7 @@
 <h2>Databases to Backup</h2>
 <form asp-controller="home" asp-action="dbconfigs" method="post">
     <table>
-        <tr><th>Database Path</th><th>Backup Frequency</th><th>Last Backup</th><th>Upload To Dropbox</th><th>Upload Frequency</th><th>Last Upload</th><th></th></tr>
+        <tr><th>Database Path</th><th>Backup Frequency</th><th>Last Backup</th><th>Upload To Dropbox</th><th>Upload Frequency</th><th>Last Upload</th><th>Optimize DB</th><th>Optimize Frequency</th><th>Last Optimize</th><th>Vacuum DB</th><th>Vacuum Frequency</th><th>Last Vacuum</th><th></th></tr>
 
         @foreach (var dbBackup in Model.DatabaseBackups)
         {

@@ -16,5 +16,13 @@ namespace SmallSqliteKit.Service.Models
         public bool UploadToDropbox { get; set; }
         public BackupFrequency? UploadToDropboxFrequency { get; set; }
         public DateTime? LastUploadToDropboxTime { get; set; }
+        
+        public bool Optimize { get; set; }
+        public BackupFrequency? OptimizeFrequency { get; set; }
+        public DateTime? LastOptimizeTime { get; set; }
+        
+        public bool Vacuum { get; set; }
+        public BackupFrequency? VacuumFrequency { get; set; }
+        public DateTime? LastVacuumTime { get; set; }
     }
 }

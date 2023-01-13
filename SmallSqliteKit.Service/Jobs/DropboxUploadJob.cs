@@ -38,7 +38,7 @@ namespace SmallSqliteKit.Service.Jobs
                     try
                     {
                         await UploadLastBackupAsync(databaseBackupRepository, dbBackup, backupPath, serviceScope.ServiceProvider.GetRequiredService<IDropboxUploadClient>());
-                        await backupAuditRepository.AuditEventAsync(dbBackup, "Upload success");
+                        await backupAuditRepository.AuditEventAsync(dbBackup, "Dropbox Upload success");
                     }
                     catch (Exception ex)
                     {
