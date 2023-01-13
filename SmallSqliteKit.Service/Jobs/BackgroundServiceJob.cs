@@ -12,6 +12,7 @@ namespace SmallSqliteKit.Service.Jobs
     public abstract class BackgroundServiceJob : BackgroundService
     {
         private static int _initialDelay = 0;
+        private static readonly SemaphoreSlim _runJobLock = new(1);
 
         private readonly IServiceProvider _serviceProvider;
         protected readonly ILogger<BackgroundServiceJob> _logger;
@@ -31,9 +32,14 @@ namespace SmallSqliteKit.Service.Jobs
                 await Task.Delay(_initialDelay, stoppingToken);
                 do
                 {
+                    _logger.LogDebug("Waiting for run lock...");
+                    await _runJobLock.WaitAsync(stoppingToken);
+                    _logger.LogDebug("Got run lock, starting job");
+
                     TimeSpan timeUntilDue;
-                    using (var scope = _serviceProvider.CreateScope())
+                    try
                     {
+                        using var scope = _serviceProvider.CreateScope();
                         var configRepository = scope.ServiceProvider.GetRequiredService<IConfigRepository>();
                         (var runInterval, var lastRunDateTime) = await GetRunIntervalsAsync(configRepository);
 
@@ -58,6 +64,10 @@ namespace SmallSqliteKit.Service.Jobs
                         {
                             timeUntilDue = timeWhenRunDue - now;
                         }
+                    }
+                    finally
+                    {
+                        _runJobLock.Release();
                     }
 
                     _logger.LogInformation($"{GetType().Name} job service - waiting [{timeUntilDue}] before running again");

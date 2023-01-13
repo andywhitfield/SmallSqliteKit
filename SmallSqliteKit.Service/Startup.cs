@@ -56,6 +56,8 @@ namespace SmallSqliteKit.Service
             services.AddHostedService<DatabaseBackupJob>();
             services.AddHostedService<DropboxUploadJob>();
             services.AddHostedService<PurgeJob>();
+            services.AddHostedService<DatabaseOptimizeJob>();
+            services.AddHostedService<DatabaseVacuumJob>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
