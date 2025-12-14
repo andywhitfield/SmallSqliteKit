@@ -1,8 +1,7 @@
-namespace SmallSqliteKit.Service.Services
+namespace SmallSqliteKit.Service.Services;
+
+public class DropboxOptions
 {
-    public class DropboxOptions
-    {
-        public string SmallSqliteKitAppKey { get; set; }
-        public string SmallSqliteKitAppSecret { get; set; }
-    }
+    public string SmallSqliteKitAppKey { get; set; } = "";
+    public string SmallSqliteKitAppSecret { get; set; } = "";
 }

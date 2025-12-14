@@ -1,45 +1,35 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmallSqliteKit.Service.Models;
 
-namespace SmallSqliteKit.Service.Data
+namespace SmallSqliteKit.Service.Data;
+
+public class DatabaseBackupRepository(SqliteDataContext context) : IDatabaseBackupRepository
 {
-    public class DatabaseBackupRepository : IDatabaseBackupRepository
+    public Task<List<DatabaseBackup>> GetAllAsync() => context.DatabaseBackups.ToListAsync();
+    
+    public Task<DatabaseBackup?> GetAsync(int databaseBackupId) => context.DatabaseBackups.FindAsync(databaseBackupId).AsTask();
+
+    public async Task AddAsync(string databasePath, BackupFrequency backupFrequency, bool uploadToDropbox, BackupFrequency? uploadToDropboxFrequency)
     {
-        private readonly SqliteDataContext _context;
-
-        public DatabaseBackupRepository(SqliteDataContext context)
+        await context.DatabaseBackups.AddAsync(new DatabaseBackup
         {
-            _context = context;
-        }
+            DatabasePath = databasePath,
+            BackupFrequency = backupFrequency,
+            UploadToDropbox = uploadToDropbox,
+            UploadToDropboxFrequency = uploadToDropbox ? uploadToDropboxFrequency : null
+        });
+        await context.SaveChangesAsync();
+    }
 
-        public Task<List<DatabaseBackup>> GetAllAsync() => _context.DatabaseBackups.ToListAsync();
-        
-        public Task<DatabaseBackup> GetAsync(int databaseBackupId) => _context.DatabaseBackups.FindAsync(databaseBackupId).AsTask();
+    public Task DeleteAsync(DatabaseBackup databaseBackup)
+    {
+        context.DatabaseBackups.Remove(databaseBackup);
+        return context.SaveChangesAsync();
+    }
 
-        public async Task AddAsync(string databasePath, BackupFrequency backupFrequency, bool uploadToDropbox, BackupFrequency? uploadToDropboxFrequency)
-        {
-            await _context.DatabaseBackups.AddAsync(new DatabaseBackup
-            {
-                DatabasePath = databasePath,
-                BackupFrequency = backupFrequency,
-                UploadToDropbox = uploadToDropbox,
-                UploadToDropboxFrequency = uploadToDropbox ? uploadToDropboxFrequency : null
-            });
-            await _context.SaveChangesAsync();
-        }
-
-        public Task DeleteAsync(DatabaseBackup databaseBackup)
-        {
-            _context.DatabaseBackups.Remove(databaseBackup);
-            return _context.SaveChangesAsync();
-        }
-
-        public Task UpdateAsync(DatabaseBackup databaseBackup)
-        {
-            _context.DatabaseBackups.Update(databaseBackup);
-            return _context.SaveChangesAsync();
-        }
+    public Task UpdateAsync(DatabaseBackup databaseBackup)
+    {
+        context.DatabaseBackups.Update(databaseBackup);
+        return context.SaveChangesAsync();
     }
 }

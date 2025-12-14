@@ -1,21 +1,13 @@
-using System;
 using System.Data;
 using System.Data.SQLite;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using SmallSqliteKit.Service.Data;
 using SmallSqliteKit.Service.Models;
 
 namespace SmallSqliteKit.Service.Jobs;
 
-public class DatabaseOptimizeJob : BackgroundServiceJob
+public class DatabaseOptimizeJob(IServiceProvider serviceProvider, ILogger<DatabaseOptimizeJob> logger)
+    : BackgroundServiceJob(serviceProvider, logger)
 {
-    public DatabaseOptimizeJob(IServiceProvider serviceProvider, ILogger<DatabaseOptimizeJob> logger) : base(serviceProvider, logger)
-    {
-    }
-
     protected override async Task RunJobAsync(IServiceScope serviceScope)
     {
         var configRepository = serviceScope.ServiceProvider.GetRequiredService<IConfigRepository>();
@@ -25,10 +17,10 @@ public class DatabaseOptimizeJob : BackgroundServiceJob
 
         foreach (var dbBackup in (await databaseBackupRepository.GetAllAsync()).Where(db => db.Optimize && db.OptimizeFrequency.HasValue))
         {
-            var dbBackupDue = dbBackup.OptimizeFrequency.Value.NextDateTime(dbBackup.LastOptimizeTime);
+            var dbBackupDue = (dbBackup.OptimizeFrequency ?? BackupFrequency.Monthly).NextDateTime(dbBackup.LastOptimizeTime);
             if (dbBackupDue < DateTime.UtcNow)
             {
-                _logger.LogInformation($"Optimizing database: {dbBackup.DatabasePath} (last optimized: {dbBackup.LastOptimizeTime}; freq: {dbBackup.OptimizeFrequency})");
+                _logger.LogInformation("Optimizing database: {DatabasePath} (last optimized: {LastOptimizeTime}; freq: {OptimizeFrequency})", dbBackup.DatabasePath, dbBackup.LastOptimizeTime, dbBackup.OptimizeFrequency);
                 try
                 {
                     await OptimizeDbAsync(databaseBackupRepository, dbBackup, backupAuditRepository);
@@ -36,13 +28,13 @@ public class DatabaseOptimizeJob : BackgroundServiceJob
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, $"Could not optimize db {dbBackup.DatabasePath}");
+                    _logger.LogWarning(ex, "Could not optimize db {DatabasePath}", dbBackup.DatabasePath);
                     await backupAuditRepository.AuditEventAsync(dbBackup, $"Optimize DB failed: unexpected error: {ex.Message}");
                 }
             }
             else
             {
-                _logger.LogDebug($"Database optimize not due: {dbBackup.DatabasePath}, next optimize: {dbBackupDue} (last optimize: {dbBackup.LastOptimizeTime}; freq: {dbBackup.OptimizeFrequency})");
+                _logger.LogDebug("Database optimize not due: {DatabasePath}, next optimize: {BackupDue} (last optimize: {LastOptimizeTime}; freq: {OptimizeFrequency})", dbBackup.DatabasePath, dbBackupDue, dbBackup.LastOptimizeTime, dbBackup.OptimizeFrequency);
             }
         }
     }
@@ -56,7 +48,7 @@ public class DatabaseOptimizeJob : BackgroundServiceJob
         dbCommand.CommandText = "PRAGMA optimize";
         await dbCommand.ExecuteNonQueryAsync();
 
-        _logger.LogInformation($"Successfully optimized database: {dbBackup.DatabasePath}");
+        _logger.LogInformation("Successfully optimized database: {DatabasePath}", dbBackup.DatabasePath);
         dbBackup.LastOptimizeTime = DateTime.UtcNow;
         await databaseBackupRepository.UpdateAsync(dbBackup);
     }
