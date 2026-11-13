@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="SmallSqliteKit.Service.Tests/SmallSqliteKit.Service.Tests.csproj" />
+  <Project Path="SmallSqliteKit.Service/SmallSqliteKit.Service.csproj" />
+</Solution>
